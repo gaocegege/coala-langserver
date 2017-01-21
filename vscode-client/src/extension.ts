@@ -34,6 +34,10 @@ function startLangServerTCP(addr: number, documentSelector: string | string[]): 
 
 	const clientOptions: LanguageClientOptions = {
 		documentSelector: documentSelector,
+		synchronize: {
+			// Notify the server about file changes to '.clientrc files contain in the workspace
+			fileEvents: workspace.createFileSystemWatcher('**/.py')
+		}
 	}
 	return new LanguageClient(`tcp lang server (port ${addr})`, serverOptions, clientOptions).start();
 }

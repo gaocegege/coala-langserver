@@ -118,6 +118,22 @@ class JSONRPC2Connection:
         self.conn.write(request)
         return self.read_message(_id)
 
+    def send_notification(self, method: str, params):
+        body = {
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params,
+        }
+        body = json.dumps(body, separators=(",", ":"))
+        content_length = len(body)
+        notification = (
+            "Content-Length: {}\r\n"
+            "Content-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n"
+            "{}".format(content_length, body))
+        log("SENDING notification: ", notification)
+        self.conn.write(notification)
+        return None
+
     def listen(self):
         while True:
             try:
