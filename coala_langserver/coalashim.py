@@ -27,6 +27,3 @@ def run_coala_with_specific_file(working_dir, file):
         log("Exited with:", retval)
     stdout_file.close()
     return output_str
-
-if __name__ == '__main__':  # pragma: no cover
-    print(run_coala_with_specific_file("/users/gaoce/projects/github/coala/", "/users/gaoce/projects/github/coala/coalib/output/printers/listlogprinter.py"))
