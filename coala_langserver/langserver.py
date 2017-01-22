@@ -66,7 +66,11 @@ class LangServer(JSONRPC2Connection):
         elif "rootPath" in params:
             self.root_path = path_from_uri(params["rootPath"])
         return {
-            "capabilities": {}
+            "capabilities": {
+                "textDocumentSync": {
+                    "willSave": 1
+                }
+            }
         }
 
     def serve_did_save(self, request):
@@ -99,7 +103,9 @@ class LangServer(JSONRPC2Connection):
                 run_coala_with_specific_file(self.root_path, path))
             self.send_diagnostics(path, diagnostics)
 
-    def send_diagnostics(self, path,  diagnostics):
+    def send_diagnostics(self, path, diagnostics):
+        if path is None or diagnostics is None:
+            return
         if remote_fs is True:
             log("TODO: Support remote file system.")
         params = {

@@ -3,6 +3,7 @@ import json
 
 class Diagnostic(object):
     """Diagnostic class for VS Code."""
+
     def __init__(self, severity, range, message, section, origin):
         self.severity = severity
         self.range = range
@@ -19,7 +20,7 @@ class Diagnostic(object):
 def output_to_diagnostics(output):
     """Turn output to diagnstics."""
     if output is None:
-        return None
+        return None, None
     output_json = json.loads(output)["results"]
     res = []
     file = None
