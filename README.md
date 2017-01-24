@@ -15,7 +15,7 @@ To try it in [Visual Studio Code](https://code.visualstudio.com), install the [v
 
 ## Feature preview
 
-![](./docs/images/demo.png)
+![](./docs/images/demo.gif)
 
 ## Reference
 
