@@ -11,6 +11,7 @@ class JSONRPC2Error(Exception):
 
 
 class ReadWriter:
+
     def __init__(self, reader, writer):
         self.reader = reader
         self.writer = writer
@@ -27,6 +28,7 @@ class ReadWriter:
 
 
 class TCPReadWriter(ReadWriter):
+
     def readline(self, *args):
         data = self.reader.readline(*args)
         return data.decode("utf-8")
@@ -40,6 +42,7 @@ class TCPReadWriter(ReadWriter):
 
 
 class JSONRPC2Connection:
+
     def __init__(self, conn=None):
         self.conn = conn
         self._msg_buffer = OrderedDict()
@@ -57,14 +60,16 @@ class JSONRPC2Connection:
             try:
                 return int(value)
             except ValueError:
-                raise JSONRPC2Error("Invalid Content-Length header: {}".format(value))
+                raise JSONRPC2Error(
+                    "Invalid Content-Length header: {}".format(value))
 
     def _receive(self):
         line = self.conn.readline()
         if line == "":
             raise EOFError()
         length = self._read_header_content_length(line)
-        # Keep reading headers until we find the sentinel line for the JSON request.
+        # Keep reading headers until we find the sentinel line for the JSON
+        # request.
         while line != "\r\n":
             line = self.conn.readline()
         body = self.conn.read(length)

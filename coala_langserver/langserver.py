@@ -3,15 +3,12 @@ import argparse
 import socketserver
 import traceback
 
-from .fs import LocalFileSystem, RemoteFileSystem
+from .fs import LocalFileSystem
 from .jsonrpc import JSONRPC2Connection, ReadWriter, TCPReadWriter
 from .log import log
 from .coalashim import run_coala_with_specific_file
 from .uri import path_from_uri
 from .diagnostic import output_to_diagnostics
-
-# TODO(renfred) non-global config.
-remote_fs = False
 
 
 class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -19,6 +16,7 @@ class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 
 class LangserverTCPTransport(socketserver.StreamRequestHandler):
+
     def handle(self):
         s = LangServer(conn=TCPReadWriter(self.rfile, self.wfile))
         try:
@@ -35,10 +33,7 @@ class LangServer(JSONRPC2Connection):
         super().__init__(conn=conn)
         self.root_path = None
         self.symbol_cache = None
-        if remote_fs:
-            self.fs = RemoteFileSystem(self)
-        else:
-            self.fs = LocalFileSystem()
+        self.fs = LocalFileSystem()
 
     def handle(self, _id, request):
         """Handle the request from language client."""
@@ -106,8 +101,6 @@ class LangServer(JSONRPC2Connection):
     def send_diagnostics(self, path, diagnostics):
         if path is None or diagnostics is None:
             return
-        if remote_fs is True:
-            log("TODO: Support remote file system.")
         params = {
             # TODO: replace file with appropriate protocol.
             "uri": "file://{0}".format(path),
@@ -118,16 +111,12 @@ class LangServer(JSONRPC2Connection):
 
 def main():
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--mode", default="stdio", help="communication (stdio|tcp)")
-    parser.add_argument("--fs", default="local", help="file system (local|remote)")
-    parser.add_argument("--addr", default=2087, help="server listen (tcp)", type=int)
-    parser.add_argument("--remote", default=0, help="temp, enable remote fs",
-                        type=int)  # TODO(renfred) remove
+    parser.add_argument("--mode", default="stdio",
+                        help="communication (stdio|tcp)")
+    parser.add_argument("--addr", default=2087,
+                        help="server listen (tcp)", type=int)
 
     args = parser.parse_args()
-
-    global remote_fs
-    remote_fs = bool(args.remote)
 
     if args.mode == "stdio":
         log("Reading on stdin, writing on stdout")

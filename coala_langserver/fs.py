@@ -21,12 +21,13 @@ class Entry:
 
 
 class FileSystem(ABC):
+
     @abstractmethod
-    def open(path: str) -> str:
+    def open(self, path: str) -> str:
         pass
 
     @abstractmethod
-    def listdir(path: str) -> List[Entry]:
+    def listdir(self, path: str) -> List[Entry]:
         pass
 
     def walk(self, top: str):
@@ -43,6 +44,7 @@ class FileSystem(ABC):
 
 
 class LocalFileSystem(FileSystem):
+
     def open(self, path):
         return open(path).read()
 
@@ -52,26 +54,4 @@ class LocalFileSystem(FileSystem):
         for n in names:
             p = os.path.join(path, n)
             entries.append(Entry(n, os.path.isdir(p), os.path.getsize(p)))
-        return entries
-
-
-class RemoteFileSystem(FileSystem):
-    def __init__(self, conn: JSONRPC2Connection):
-        self.conn = conn
-
-    @lru_cache(maxsize=128)
-    def open(self, path):
-        resp = self.conn.send_request("fs/readFile", path)
-        if resp.get("error") is not None:
-            raise FileException(resp["error"])
-        return base64.b64decode(resp["result"]).decode("utf-8")
-
-    @lru_cache(maxsize=128)
-    def listdir(self, path):
-        resp = self.conn.send_request("fs/readDir", path)
-        if resp.get("error") is not None:
-            raise FileException(resp["error"])
-        entries = []
-        for e in resp["result"]:
-            entries.append(Entry(e["name"], e["dir"], e["size"]))
         return entries
