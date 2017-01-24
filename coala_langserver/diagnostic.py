@@ -20,10 +20,9 @@ class Diagnostic(object):
 def output_to_diagnostics(output):
     """Turn output to diagnstics."""
     if output is None:
-        return None, None
+        return None
     output_json = json.loads(output)["results"]
     res = []
-    file = None
     for key, problems in output_json.items():
         section = key
         for problem in problems:
@@ -48,5 +47,4 @@ def output_to_diagnostics(output):
                     "source": "coala",
                     "message": real_message
                 })
-                file = code["file"]
-    return file, res
+    return res

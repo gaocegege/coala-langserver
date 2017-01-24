@@ -42,12 +42,13 @@ class LangServer(JSONRPC2Connection):
 
         if request["method"] == "initialize":
             resp = self.serve_initialize(request)
-        elif request["method"] == "textDocument/didChange":
-            resp = self.serve_change(request)
+        # TODO: Support didChange.
+        # elif request["method"] == "textDocument/didChange":
+        #     resp = self.serve_change(request)
+        # elif request["method"] == "workspace/didChangeWatchedFiles":
+        #     resp = self.serve_did_change_watched_files(request)
         elif request["method"] == "textDocument/didSave":
             resp = self.serve_did_save(request)
-        elif request["method"] == "workspace/didChangeWatchedFiles":
-            resp = self.serve_did_change_watched_files(request)
 
         if resp is not None:
             self.write_response(request["id"], resp)
@@ -62,9 +63,7 @@ class LangServer(JSONRPC2Connection):
             self.root_path = path_from_uri(params["rootPath"])
         return {
             "capabilities": {
-                "textDocumentSync": {
-                    "willSave": 1
-                }
+                "textDocumentSync": 1
             }
         }
 
@@ -73,7 +72,7 @@ class LangServer(JSONRPC2Connection):
         params = request["params"]
         uri = params["textDocument"]["uri"]
         path = path_from_uri(uri)
-        path, diagnostics = output_to_diagnostics(
+        diagnostics = output_to_diagnostics(
             run_coala_with_specific_file(self.root_path, path))
         self.send_diagnostics(path, diagnostics)
         return None
@@ -83,7 +82,7 @@ class LangServer(JSONRPC2Connection):
         params = request["params"]
         uri = params["textDocument"]["uri"]
         path = path_from_uri(uri)
-        path, diagnostics = output_to_diagnostics(
+        diagnostics = output_to_diagnostics(
             run_coala_with_specific_file(self.root_path, path))
         self.send_diagnostics(path, diagnostics)
         return None
@@ -94,17 +93,17 @@ class LangServer(JSONRPC2Connection):
         for fileEvent in changes:
             uri = fileEvent["uri"]
             path = path_from_uri(uri)
-            path, diagnostics = output_to_diagnostics(
+            diagnostics = output_to_diagnostics(
                 run_coala_with_specific_file(self.root_path, path))
             self.send_diagnostics(path, diagnostics)
 
     def send_diagnostics(self, path, diagnostics):
-        if path is None or diagnostics is None:
-            return
+        _diagnostics = []
+        if diagnostics is not None:
+            _diagnostics = diagnostics
         params = {
-            # TODO: replace file with appropriate protocol.
             "uri": "file://{0}".format(path),
-            "diagnostics": diagnostics,
+            "diagnostics": _diagnostics,
         }
         self.send_notification("textDocument/publishDiagnostics", params)
 
