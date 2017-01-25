@@ -1,5 +1,7 @@
 # Coala language server
 
+**UNMAINTAINED: MOVE TO [github.com/coala/coala-vs-code](https://github.com/coala/coala-vs-code)**
+
 This is a language server for Coala that adheres to the [Language Server Protocol (LSP)](https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md). Python versions 3.x are supported.
 
 **Note: this language server is currently in the early stages of active development and not all features are yet supported.**
